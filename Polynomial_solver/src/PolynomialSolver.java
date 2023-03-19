@@ -85,18 +85,40 @@ public class PolynomialSolver implements IPolynomialSolver{
 
         PolynomialSolver problem = new PolynomialSolver();
         problem.setPolynomial('A', arr);
-        String output = problem.print('A');
-        System.out.println(output);
-        problem.clearPolynomial('A');
-        output = problem.print('A');
+        
+        
+        String sin2 = sc.nextLine().replaceAll("\\[|\\]", "");
+        String[] s2 = sin2.split(", ");;
+        int[][] arr2 = new int[2][s2.length];
+        if (s.length == 1 && s[0].isEmpty())
+            arr2 = new int[][]{};
+        else {
+            for(int i = 0; i < s2.length; ++i){
+                arr2[0][i] = s2.length - i -1;
+                arr2[1][i] = Integer.parseInt(s2[i]);
+            }
+        }
+
+        problem.setPolynomial('B', arr2);
+        int[][] result = problem.subtract('A', 'B');
+        problem.setPolynomial('R', result);
+        String output = problem.print('R');
         System.out.println(output);
 
-        /* Enter your code here. Read input from STDIN. Print output to STDOUT. Your class should be named Solution. */
+
+
+        // String output = problem.print('A');
+        // System.out.println(output);
+        // float testeval = problem.evaluatePolynomial('A', 5);
+        // System.out.println(testeval);
+        // problem.clearPolynomial('A');
+        // output = problem.print('A');
+        // System.out.println(output);
+
     }
 
     @Override
     public void setPolynomial(char poly, int[][] terms) {
-        // TODO Auto-generated method stub
         ILinkedList polylinked = new SingleLinkedList();
         switch(poly){
             case 'A':
@@ -108,6 +130,9 @@ public class PolynomialSolver implements IPolynomialSolver{
             case 'C':
                 polylinked = C;
                 break;
+            case 'R':
+                polylinked = R;
+                break;
             default:
                 break;
         }
@@ -116,7 +141,6 @@ public class PolynomialSolver implements IPolynomialSolver{
             newTerm.exponent = terms[0][i];
             newTerm.coefficient = terms[1][i];
             polylinked.add(newTerm);
-            // System.out.println(polylinked.get(i));
         }        
     }
 
@@ -133,6 +157,8 @@ public class PolynomialSolver implements IPolynomialSolver{
             case 'C':
                 polylinked = C;
                 break;
+            case 'R':
+                polylinked = R;
             default:
                 break;
         }
@@ -143,7 +169,6 @@ public class PolynomialSolver implements IPolynomialSolver{
             }
             else{
                 if (ind.exponent == 0) {
-                    System.out.println(result.length());
                     if (result.length() != 0 && ind.coefficient > 0) result += "+"; 
                     result += ind.coefficient;
                 }
@@ -159,7 +184,6 @@ public class PolynomialSolver implements IPolynomialSolver{
                         else
                         {
                             result = result + ind.coefficient + "x";
-
                         }
                     }
                     if (ind.exponent != 1) result += ("^" + ind.exponent);
@@ -190,20 +214,115 @@ public class PolynomialSolver implements IPolynomialSolver{
 
     @Override
     public float evaluatePolynomial(char poly, float value) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'evaluatePolynomial'");
+        float evalresult = 0;
+        ILinkedList polylinked = new SingleLinkedList();
+        switch(poly){
+            case 'A':
+                polylinked = A;
+                break;
+            case 'B':
+                polylinked = B;
+                break;
+            case 'C':
+                polylinked = C;
+                break;
+            default:
+                break;
+        }
+        for (int i = 0; i < polylinked.size(); i++) {
+            Term ind = (Term)polylinked.get(i);
+            evalresult += ind.coefficient * (Math.pow(value, ind.exponent));
+        }
+        return evalresult;
     }
 
     @Override
     public int[][] add(char poly1, char poly2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'add'");
+        ILinkedList polylinked1 = new SingleLinkedList();
+        ILinkedList polylinked2 = new SingleLinkedList();
+        switch(poly1){
+            case 'A':
+                polylinked1 = A;
+                break;
+            case 'B':
+                polylinked1 = B;
+                break;
+            case 'C':
+                polylinked1 = C;
+                break;
+            default:
+                break;
+        }
+        switch(poly2){
+            case 'A':
+                polylinked2 = A;
+                break;
+            case 'B':
+                polylinked2 = B;
+                break;
+            case 'C':
+                polylinked2 = C;
+                break;
+            default:
+                break;
+        }
+        int size = (polylinked1.size()>polylinked2.size())? polylinked1.size() : polylinked2.size();
+        int [][] addresult = new int[2][size];
+        for (int i = 0; i < size; i++) {
+            addresult[0][i] = size -i -1;
+        }
+
+        if (polylinked1.size() > polylinked2.size()) {
+            int index1 = polylinked1.size()-1, index2 = polylinked2.size() -1;
+            while (index1 >= 0) {
+                addresult[1][index1] = 0;
+                if (index2 >= 0) {
+                    addresult[1][index1] =  ((Term)polylinked2.get(index2)).coefficient;
+                }
+                addresult[1][index1] += ((Term)polylinked1.get(index1)).coefficient;
+                index1--;
+                index2--;
+            }
+        }
+        else{
+            int index1 = polylinked1.size()-1, index2 = polylinked2.size() -1;
+            while (index2 >= 0) {
+                addresult[1][index2] = 0;
+                if (index1 >= 0) {
+                    addresult[1][index2] =  ((Term)polylinked1.get(index1)).coefficient;
+                }
+                addresult[1][index2] += ((Term)polylinked2.get(index2)).coefficient;
+                index1--;
+                index2--;
+            }
+        }
+        return addresult;
     }
 
     @Override
     public int[][] subtract(char poly1, char poly2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'subtract'");
+        ILinkedList polylinked = new SingleLinkedList();
+        switch(poly2){
+            case 'A':
+                polylinked = A;
+                break;
+            case 'B':
+                polylinked = B;
+                break;
+            case 'C':
+                polylinked = C;
+                break;
+            default:
+                break;
+        }
+        for (int i = 0; i < polylinked.size(); i++) {
+            ((Term)(polylinked.get(i))).coefficient *= -1;
+        }
+        int[][] subresult = add(poly1, poly2);
+        for (int i = 0; i < polylinked.size(); i++) {
+            ((Term)(polylinked.get(i))).coefficient *= -1;
+        }
+        return subresult;
     }
 
     @Override
@@ -212,6 +331,5 @@ public class PolynomialSolver implements IPolynomialSolver{
         throw new UnsupportedOperationException("Unimplemented method 'multiply'");
     }
 }
-
 
 
