@@ -69,10 +69,10 @@ public class PolynomialSolver implements IPolynomialSolver{
     ILinkedList C = new SingleLinkedList();
     ILinkedList R = new SingleLinkedList();
 
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+
+    public void readPolynomial(char poly, Scanner sc){
         String sin = sc.nextLine().replaceAll("\\[|\\]", "");
-        String[] s = sin.split(", ");;
+        String[] s = sin.split(",");;
         int[][] arr = new int[2][s.length];
         if (s.length == 1 && s[0].isEmpty())
             arr = new int[][]{};
@@ -83,84 +83,109 @@ public class PolynomialSolver implements IPolynomialSolver{
             }
         }
 
-        PolynomialSolver problem = new PolynomialSolver();
-        problem.setPolynomial('A', arr);
-        
-        
-        String sin2 = sc.nextLine().replaceAll("\\[|\\]", "");
-        String[] s2 = sin2.split(", ");;
-        int[][] arr2 = new int[2][s2.length];
-        if (s.length == 1 && s[0].isEmpty())
-            arr2 = new int[][]{};
-        else {
-            for(int i = 0; i < s2.length; ++i){
-                arr2[0][i] = s2.length - i -1;
-                arr2[1][i] = Integer.parseInt(s2[i]);
+        setPolynomial(poly, arr);
+    }
+
+    public char readChar(Scanner sc){
+        String polyName = sc.nextLine().trim();
+        if (polyName.length() != 1 || polyName == "R"){
+            throw new RuntimeException("Error");
+        }
+        return polyName.charAt(0);
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+//        boolean input_loop = true;
+        PolynomialSolver polynomialSolver = new PolynomialSolver();
+
+        while(true){
+            int[][] result;
+            char polyName;
+            String output;
+            String command = sc.nextLine();
+            switch (command){
+                case "set":
+                    polynomialSolver.readPolynomial(polynomialSolver.readChar(sc),sc);
+                    continue;
+                case "print":
+                    output = polynomialSolver.print(polynomialSolver.readChar(sc));
+                    System.out.println(output);
+                    continue;
+                case "add":
+                    result = polynomialSolver.add(polynomialSolver.readChar(sc),polynomialSolver.readChar(sc));
+                    polynomialSolver.setPolynomial('R', result);
+                    output = polynomialSolver.print('R');
+                    System.out.println(output);
+                    return;
+                case "sub":
+                    result = polynomialSolver.subtract(polynomialSolver.readChar(sc),polynomialSolver.readChar(sc));
+                    polynomialSolver.setPolynomial('R', result);
+                    output = polynomialSolver.print('R');
+                    System.out.println(output);
+                    return;
+                case "mult":
+                    result = polynomialSolver.multiply(polynomialSolver.readChar(sc),polynomialSolver.readChar(sc));
+                    polynomialSolver.setPolynomial('R', result);
+                    output = polynomialSolver.print('R');
+                    System.out.println(output);
+                    return;
+                case "clear":
+                    polyName = polynomialSolver.readChar(sc);
+                    polynomialSolver.clearPolynomial(polyName);
+                    output = polynomialSolver.print(polyName);
+                    System.out.println(output);
+                    return;
+                case "eval":
+                    polyName = polynomialSolver.readChar(sc);
+                    float c = sc.nextFloat();
+                    float evalResult = polynomialSolver.evaluatePolynomial(polyName,c);
+
+                    if(Math.abs(evalResult-(int)evalResult) < 1e-13)
+                        System.out.println((int)evalResult);
+                    else
+                        System.out.println(evalResult);
+                    return;
+                default:
+                    throw new RuntimeException("Not a valid command");
             }
         }
 
-        problem.setPolynomial('B', arr2);
-        int[][] result = problem.subtract('A', 'B');
-        problem.setPolynomial('R', result);
-        String output = problem.print('R');
-        System.out.println(output);
-
-
-
-        // String output = problem.print('A');
-        // System.out.println(output);
-        // float testeval = problem.evaluatePolynomial('A', 5);
-        // System.out.println(testeval);
-        // problem.clearPolynomial('A');
-        // output = problem.print('A');
-        // System.out.println(output);
-
     }
 
-    @Override
-    public void setPolynomial(char poly, int[][] terms) {
-        ILinkedList polylinked = new SingleLinkedList();
+    public ILinkedList getPolynomial(char poly){
         switch(poly){
             case 'A':
-                polylinked = A;
-                break;
+                return A;
             case 'B':
-                polylinked = B;
-                break;
+                return B;
             case 'C':
-                polylinked = C;
-                break;
+                return C;
             case 'R':
-                polylinked = R;
-                break;
+                return R;
             default:
-                break;
+                throw new RuntimeException("Error");
         }
+
+    }
+    @Override
+    public void setPolynomial(char poly, int[][] terms) {
+        ILinkedList polylinked = getPolynomial(poly);
         for (int i = 0; i < terms[0].length; i++) {
             Term newTerm = new Term();
             newTerm.exponent = terms[0][i];
             newTerm.coefficient = terms[1][i];
-            polylinked.add(newTerm);
+            if (newTerm.coefficient != 0){
+                polylinked.add(newTerm);
+            }
         }        
     }
 
     public String print(char poly) {
-        ILinkedList polylinked = new SingleLinkedList();
+        ILinkedList polylinked = getPolynomial(poly);;
         String result = new String();
-        switch(poly){
-            case 'A':
-                polylinked = A;
-                break;
-            case 'B':
-                polylinked = B;
-                break;
-            case 'C':
-                polylinked = C;
-                break;
-            case 'R':
-                polylinked = R;
-            default:
-                break;
+
+        if(polylinked.size() == 0){
+            System.out.println("[]");
         }
         for (int i = 0; i < polylinked.size(); i++) {
             Term ind = (Term)polylinked.get(i);
@@ -195,40 +220,15 @@ public class PolynomialSolver implements IPolynomialSolver{
 
     @Override
     public void clearPolynomial(char poly) {
-        ILinkedList polylinked = new SingleLinkedList();
-        switch(poly){
-            case 'A':
-                polylinked = A;
-                break;
-            case 'B':
-                polylinked = B;
-                break;
-            case 'C':
-                polylinked = C;
-                break;
-            default:
-                break;
-        }
-        polylinked.clear();
+        getPolynomial(poly).clear();
     }
 
     @Override
     public float evaluatePolynomial(char poly, float value) {
         float evalresult = 0;
-        ILinkedList polylinked = new SingleLinkedList();
-        switch(poly){
-            case 'A':
-                polylinked = A;
-                break;
-            case 'B':
-                polylinked = B;
-                break;
-            case 'C':
-                polylinked = C;
-                break;
-            default:
-                break;
-        }
+        ILinkedList polylinked = getPolynomial(poly);
+        if(polylinked.size() == 0)
+            throw new RuntimeException("Polynomial can't have size zero");
         for (int i = 0; i < polylinked.size(); i++) {
             Term ind = (Term)polylinked.get(i);
             evalresult += ind.coefficient * (Math.pow(value, ind.exponent));
@@ -238,35 +238,13 @@ public class PolynomialSolver implements IPolynomialSolver{
 
     @Override
     public int[][] add(char poly1, char poly2) {
-        ILinkedList polylinked1 = new SingleLinkedList();
-        ILinkedList polylinked2 = new SingleLinkedList();
-        switch(poly1){
-            case 'A':
-                polylinked1 = A;
-                break;
-            case 'B':
-                polylinked1 = B;
-                break;
-            case 'C':
-                polylinked1 = C;
-                break;
-            default:
-                break;
-        }
-        switch(poly2){
-            case 'A':
-                polylinked2 = A;
-                break;
-            case 'B':
-                polylinked2 = B;
-                break;
-            case 'C':
-                polylinked2 = C;
-                break;
-            default:
-                break;
-        }
-        int size = (polylinked1.size()>polylinked2.size())? polylinked1.size() : polylinked2.size();
+
+        ILinkedList polylinked1 = getPolynomial(poly1);
+        ILinkedList polylinked2 = getPolynomial(poly2);
+        if(polylinked1.size() == 0 || polylinked2.size() == 0)
+            throw new RuntimeException("Polynomial can't have size zero");
+
+        int size = Math.max(polylinked1.size(), polylinked2.size());
         int [][] addresult = new int[2][size];
         for (int i = 0; i < size; i++) {
             addresult[0][i] = size -i -1;
@@ -301,20 +279,7 @@ public class PolynomialSolver implements IPolynomialSolver{
 
     @Override
     public int[][] subtract(char poly1, char poly2) {
-        ILinkedList polylinked = new SingleLinkedList();
-        switch(poly2){
-            case 'A':
-                polylinked = A;
-                break;
-            case 'B':
-                polylinked = B;
-                break;
-            case 'C':
-                polylinked = C;
-                break;
-            default:
-                break;
-        }
+        ILinkedList polylinked = getPolynomial(poly2);
         for (int i = 0; i < polylinked.size(); i++) {
             ((Term)(polylinked.get(i))).coefficient *= -1;
         }
@@ -325,10 +290,45 @@ public class PolynomialSolver implements IPolynomialSolver{
         return subresult;
     }
 
+    public int[][] initPolyArray(int size){
+        int[][] result = new int[2][size];
+        for (int i = 0; i < size; i++) {
+            result[0][i] = size-i-1;
+            result[1][i] = 0;
+        }
+        return result;
+    }
     @Override
     public int[][] multiply(char poly1, char poly2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'multiply'");
+        ILinkedList polyList1 = getPolynomial(poly1);
+        ILinkedList polyList2 = getPolynomial(poly2);
+        if(polyList1.size() == 0 || polyList2.size() == 0)
+            throw new RuntimeException("Polynomial can't have size zero");
+
+        // get max degree to initialize array
+        int degree = 0;
+        for (int i = 0; i< polyList1.size(); i++){
+            for(int j = 0; j < polyList2.size(); j++){
+                Term term1 = (Term)polyList1.get(i);
+                Term term2 = (Term)polyList2.get(j);
+                Term resultTerm = new Term();
+                resultTerm.exponent = term1.exponent + term2.exponent;
+                degree = Math.max(resultTerm.exponent,degree);
+            }
+        }
+
+        int[][] result = initPolyArray(degree + 1);
+        for (int i = 0; i< polyList1.size(); i++) {
+            for (int j = 0; j < polyList2.size(); j++) {
+                Term term1 = (Term)polyList1.get(i);
+                Term term2 = (Term)polyList2.get(j);
+                Term resultTerm = new Term();
+                resultTerm.exponent = term1.exponent + term2.exponent;
+                resultTerm.coefficient = term1.coefficient * term2.coefficient;
+                result[1][degree-resultTerm.exponent] += resultTerm.coefficient;
+            }
+        }
+        return result;
     }
 }
 
