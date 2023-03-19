@@ -427,7 +427,8 @@ public class PolynomialSolver implements IPolynomialSolver{
                     }
                     else{
                         if (ind.coefficient > 0 && i != 0) {
-                            result = result + "+" + ind.coefficient + "x";
+                            if (result.length() != 0) result += "+";
+                            result += ind.coefficient + "x";
                         }
                         else
                         {
@@ -554,5 +555,6 @@ public class PolynomialSolver implements IPolynomialSolver{
         return result;
     }
 }
+
 
 
