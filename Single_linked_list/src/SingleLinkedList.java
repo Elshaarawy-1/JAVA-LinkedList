@@ -270,6 +270,7 @@ public class SingleLinkedList implements ILinkedList {
                 temp = curr.next;
                 curr.next = temp.next;
                 temp = null;
+                if (index == length - 1) tail = curr;
             }
         }
         length--;
